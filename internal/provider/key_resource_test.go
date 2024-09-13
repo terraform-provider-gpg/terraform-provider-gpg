@@ -18,7 +18,7 @@ func TestAccKeyResource(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
-				Config: testAccKeyResourceConfig("Jon Doe", "jon.doe@example.com", "top secret"),
+				Config: testAccKeyResourceConfig("John Doe", "john.doe@example.com", "top secret"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckGpgKey("gpg_key.test"),
 				),

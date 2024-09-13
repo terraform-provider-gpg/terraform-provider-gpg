@@ -1,7 +1,7 @@
 resource "gpg_key" "this" {
   identities = [{
-    name  = "Jon Doe"
-    email = "jon.doe@example.com"
+    name  = "John Doe"
+    email = "john.doe@example.com"
   }]
   version    = "v4"
   passphrase = "topsecret"
