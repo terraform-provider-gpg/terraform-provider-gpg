@@ -9,6 +9,14 @@ The GPG provider provides a resource to generate an ECC (Curve25519) private/pub
 
 Example:
 ```terraform
+terraform {
+  required_providers {
+    gpg = {
+      source = "terraform-provider-gpg/gpg"
+    }
+  }
+}
+
 resource "gpg_key" "this" {
   identities = [{
     name  = "John Doe"

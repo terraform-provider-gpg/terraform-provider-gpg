@@ -41,14 +41,14 @@ func (g KeyResource) Schema(ctx context.Context, req resource.SchemaRequest, res
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:            true,
-				MarkdownDescription: "ID of the key in hex format",
+				MarkdownDescription: "ID of the key in hex format.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"identities": schema.ListNestedAttribute{
-				Description: "List of identities for the GPG key",
-				Optional:    true,
+				Description: "List of identities for the GPG key. Due to limitations in the underlying library only one identity is supported at the moment.",
+				Required:    true,
 				PlanModifiers: []planmodifier.List{
 					listplanmodifier.RequiresReplace(),
 				},
@@ -68,11 +68,11 @@ func (g KeyResource) Schema(ctx context.Context, req resource.SchemaRequest, res
 			"passphrase": schema.StringAttribute{
 				Required:            true,
 				Sensitive:           true,
-				MarkdownDescription: "Passphrase for locking the key",
+				MarkdownDescription: "Passphrase for locking the key.",
 			},
 			"fingerprint": schema.StringAttribute{
 				Computed:            true,
-				MarkdownDescription: "Fingerprint of the key",
+				MarkdownDescription: "Fingerprint of the key.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
@@ -80,7 +80,7 @@ func (g KeyResource) Schema(ctx context.Context, req resource.SchemaRequest, res
 			"private_key": schema.StringAttribute{
 				Computed:            true,
 				Sensitive:           true,
-				MarkdownDescription: "Private key in armored format",
+				MarkdownDescription: "Private key in armored format.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
@@ -88,21 +88,21 @@ func (g KeyResource) Schema(ctx context.Context, req resource.SchemaRequest, res
 			"private_key_hex": schema.StringAttribute{
 				Computed:            true,
 				Sensitive:           true,
-				MarkdownDescription: "Private key in hex format",
+				MarkdownDescription: "Private key in hex format.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"public_key": schema.StringAttribute{
 				Computed:            true,
-				MarkdownDescription: "Public key in armored format",
+				MarkdownDescription: "Public key in armored format.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"public_key_hex": schema.StringAttribute{
 				Computed:            true,
-				MarkdownDescription: "Public key in hex format",
+				MarkdownDescription: "Public key in hex format.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},

@@ -24,7 +24,8 @@ Official documentation on how to use this provider can be found on the
 The release process is automated via GitHub Actions, and it's defined in the Workflow
 [release.yml](./.github/workflows/release.yml).
 
-Each release is cut by pushing a [semantically versioned](https://semver.org/) tag to the default branch. Example:
+Each release is cut by pushing a [semantically versioned](https://semver.org/) tag to the default branch.
 
+Example:
 1. `git tag v0.0.1`
 1. `git push --tags`

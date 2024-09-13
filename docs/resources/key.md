@@ -17,6 +17,14 @@ state](https://www.terraform.io/docs/state/sensitive-data.html).
 ## Example Usage
 
 ```terraform
+terraform {
+  required_providers {
+    gpg = {
+      source = "terraform-provider-gpg/gpg"
+    }
+  }
+}
+
 resource "gpg_key" "this" {
   identities = [{
     name  = "John Doe"
@@ -31,20 +39,17 @@ resource "gpg_key" "this" {
 
 ### Required
 
-- `passphrase` (String, Sensitive) Passphrase for locking the key
-
-### Optional
-
-- `identities` (Attributes List) List of identities for the GPG key (see [below for nested schema](#nestedatt--identities))
+- `identities` (Attributes List) List of identities for the GPG key. Due to limitations in the underlying library only one identity is supported at the moment. (see [below for nested schema](#nestedatt--identities))
+- `passphrase` (String, Sensitive) Passphrase for locking the key.
 
 ### Read-Only
 
-- `fingerprint` (String) Fingerprint of the key
-- `id` (String) ID of the key in hex format
-- `private_key` (String, Sensitive) Private key in armored format
-- `private_key_hex` (String, Sensitive) Private key in hex format
-- `public_key` (String) Public key in armored format
-- `public_key_hex` (String) Public key in hex format
+- `fingerprint` (String) Fingerprint of the key.
+- `id` (String) ID of the key in hex format.
+- `private_key` (String, Sensitive) Private key in armored format.
+- `private_key_hex` (String, Sensitive) Private key in hex format.
+- `public_key` (String) Public key in armored format.
+- `public_key_hex` (String) Public key in hex format.
 
 <a id="nestedatt--identities"></a>
 ### Nested Schema for `identities`
