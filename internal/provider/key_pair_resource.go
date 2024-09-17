@@ -20,34 +20,34 @@ import (
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
-var _ resource.Resource = &KeyResource{}
-var _ resource.ResourceWithValidateConfig = &KeyResource{}
+var _ resource.Resource = &KeyPairResource{}
+var _ resource.ResourceWithValidateConfig = &KeyPairResource{}
 
-func NewGpgKeyResource() resource.Resource {
-	return &KeyResource{}
+func NewKeyPairResource() resource.Resource {
+	return &KeyPairResource{}
 }
 
-type KeyResource struct {
+type KeyPairResource struct {
 }
 
-func (g KeyResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_key"
+func (g KeyPairResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_key_pair"
 }
 
-func (g KeyResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (g KeyPairResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
 		MarkdownDescription: "A resource for generating ECC (Curve25519) GPG keys",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:            true,
-				MarkdownDescription: "ID of the key in hex format.",
+				MarkdownDescription: "ID of the key pair in hex format.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"identities": schema.ListNestedAttribute{
-				Description: "List of identities for the GPG key. Due to limitations in the underlying library only one identity is supported at the moment.",
+				Description: "List of identities for the GPG key pair. Due to limitations in the underlying library only one identity is supported at the moment.",
 				Required:    true,
 				PlanModifiers: []planmodifier.List{
 					listplanmodifier.RequiresReplace(),
@@ -68,11 +68,11 @@ func (g KeyResource) Schema(ctx context.Context, req resource.SchemaRequest, res
 			"passphrase": schema.StringAttribute{
 				Required:            true,
 				Sensitive:           true,
-				MarkdownDescription: "Passphrase for locking the key.",
+				MarkdownDescription: "Passphrase for locking the private key.",
 			},
 			"fingerprint": schema.StringAttribute{
 				Computed:            true,
-				MarkdownDescription: "Fingerprint of the key.",
+				MarkdownDescription: "Fingerprint of the public key.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
@@ -111,7 +111,7 @@ func (g KeyResource) Schema(ctx context.Context, req resource.SchemaRequest, res
 	}
 }
 
-func (g KeyResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+func (g KeyPairResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
 	var data keyModelV1
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
@@ -123,14 +123,14 @@ func (g KeyResource) ValidateConfig(ctx context.Context, req resource.ValidateCo
 	if len(data.Identities) == 0 {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("identities"),
-			"GPG v4 keys need at least one identity",
-			"GPG v4 keys need at least one identity.",
+			"GPG v4 key pairs need at least one identity",
+			"GPG v4 key pairs need at least one identity.",
 		)
 		return
 	}
 }
 
-func (g KeyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+func (g KeyPairResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data keyModelV1
 
 	// Read Terraform plan data into the model
@@ -150,26 +150,26 @@ func (g KeyResource) Create(ctx context.Context, req resource.CreateRequest, res
 	key, err := builder.New().GenerateKeyWithSecurity(constants.HighSecurity)
 
 	if err != nil {
-		resp.Diagnostics.AddError("GPG key generation failed", fmt.Sprintf("GenerateKeyWithSecurity failed with error: %s", err))
+		resp.Diagnostics.AddError("GPG key pair generation failed", fmt.Sprintf("GenerateKeyWithSecurity failed with error: %s", err))
 		return
 	}
 	defer key.ClearPrivateParams()
 
 	key, err = pgp.LockKey(key, unsafe.Slice(unsafe.StringData(data.Passphrase.ValueString()), len(data.Passphrase.ValueString())))
 	if err != nil {
-		resp.Diagnostics.AddError("GPG key generation failed", fmt.Sprintf("LockKey failed with error: %s", err))
+		resp.Diagnostics.AddError("GPG key pair generation failed", fmt.Sprintf("LockKey failed with error: %s", err))
 		return
 	}
 
 	privateKey, err := key.Armor()
 	if err != nil {
-		resp.Diagnostics.AddError("GPG key generation failed", fmt.Sprintf("Armor failed with error: %s", err))
+		resp.Diagnostics.AddError("GPG key pair generation failed", fmt.Sprintf("Armor failed with error: %s", err))
 		return
 	}
 
 	privateKeyHex, err := key.Serialize()
 	if err != nil {
-		resp.Diagnostics.AddError("GPG key generation failed", fmt.Sprintf("Serialize failed with error: %s", err))
+		resp.Diagnostics.AddError("GPG key pair generation failed", fmt.Sprintf("Serialize failed with error: %s", err))
 		return
 	}
 
@@ -181,7 +181,7 @@ func (g KeyResource) Create(ctx context.Context, req resource.CreateRequest, res
 
 	publicKeyHex, err := key.GetPublicKey()
 	if err != nil {
-		resp.Diagnostics.AddError("GPG key generation failed", fmt.Sprintf("GetPublicKey failed with error: %s", err))
+		resp.Diagnostics.AddError("GPG key pair generation failed", fmt.Sprintf("GetPublicKey failed with error: %s", err))
 		return
 	}
 
@@ -196,12 +196,12 @@ func (g KeyResource) Create(ctx context.Context, req resource.CreateRequest, res
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (g KeyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+func (g KeyPairResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	// Nothing to do here.
 }
 
 // Update ensures the plan value is copied to the state to complete the update.
-func (g KeyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (g KeyPairResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var model keyModelV1
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &model)...)
@@ -213,7 +213,7 @@ func (g KeyResource) Update(ctx context.Context, req resource.UpdateRequest, res
 	resp.Diagnostics.Append(resp.State.Set(ctx, &model)...)
 }
 
-func (g KeyResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (g KeyPairResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Nothing to do here.
 }
 

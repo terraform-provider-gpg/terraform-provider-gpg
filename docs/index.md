@@ -17,7 +17,7 @@ terraform {
   }
 }
 
-resource "gpg_key" "this" {
+resource "gpg_key_pair" "this" {
   identities = [{
     name  = "John Doe"
     email = "john.doe@example.com"

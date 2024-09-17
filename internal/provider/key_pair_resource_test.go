@@ -20,14 +20,14 @@ func TestAccKeyResource(t *testing.T) {
 			{
 				Config: testAccKeyResourceConfig("John Doe", "john.doe@example.com", "top secret"),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckGpgKey("gpg_key.test"),
+					testAccCheckGpgKey("gpg_key_pair.test"),
 				),
 			},
 			// Update and Read testing
 			{
 				Config: testAccKeyResourceConfig("Jane Doe", "jane.doe@example.com", "top secret"),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckGpgKey("gpg_key.test"),
+					testAccCheckGpgKey("gpg_key_pair.test"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -87,7 +87,7 @@ func testAccCheckGpgKey(name string) resource.TestCheckFunc {
 
 func testAccKeyResourceConfig(name string, email string, passphrase string) string {
 	return fmt.Sprintf(`
-resource "gpg_key" "test" {
+resource "gpg_key_pair" "test" {
   identities = [{
 	name  = %[1]q
 	email = %[2]q
