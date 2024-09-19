@@ -32,10 +32,10 @@ func (g KeyResource) Metadata(ctx context.Context, req resource.MetadataRequest,
 }
 
 func (g KeyResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = *keySchema(ctx)
+	resp.Schema = *keySchema()
 }
 
-func keySchema(ctx context.Context) *schema.Schema {
+func keySchema() *schema.Schema {
 	return &schema.Schema{
 		// This description is used by the documentation generator and the language server.
 		MarkdownDescription: "A resource for generating ECC (Curve25519) GPG keys (deprecated)",

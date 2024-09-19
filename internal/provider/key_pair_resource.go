@@ -34,7 +34,7 @@ type KeyPairResource struct {
 func (g KeyPairResource) MoveState(ctx context.Context) []resource.StateMover {
 	return []resource.StateMover{
 		{
-			SourceSchema: keySchema(ctx),
+			SourceSchema: keySchema(),
 			StateMover:   g.moveStateResourceKey,
 		},
 	}
