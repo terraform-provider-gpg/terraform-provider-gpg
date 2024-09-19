@@ -11,23 +11,23 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccKeyPairResource(t *testing.T) {
+func TestAccKeyResource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
-				Config: testAccKeyPairResourceConfig("John Doe", "john.doe@example.com", "top secret"),
+				Config: testAccKeyResourceConfig("John Doe", "john.doe@example.com", "top secret"),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckGpgKeyPair("gpg_key_pair.test"),
+					testAccCheckGpgKey("gpg_key.test"),
 				),
 			},
 			// Update and Read testing
 			{
-				Config: testAccKeyPairResourceConfig("Jane Doe", "jane.doe@example.com", "top secret"),
+				Config: testAccKeyResourceConfig("Jane Doe", "jane.doe@example.com", "top secret"),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckGpgKeyPair("gpg_key_pair.test"),
+					testAccCheckGpgKey("gpg_key.test"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -35,7 +35,7 @@ func TestAccKeyPairResource(t *testing.T) {
 	})
 }
 
-func testAccCheckGpgKeyPair(name string) resource.TestCheckFunc {
+func testAccCheckGpgKey(name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -85,9 +85,9 @@ func testAccCheckGpgKeyPair(name string) resource.TestCheckFunc {
 	}
 }
 
-func testAccKeyPairResourceConfig(name string, email string, passphrase string) string {
+func testAccKeyResourceConfig(name string, email string, passphrase string) string {
 	return fmt.Sprintf(`
-resource "gpg_key_pair" "test" {
+resource "gpg_key" "test" {
   identities = [{
 	name  = %[1]q
 	email = %[2]q

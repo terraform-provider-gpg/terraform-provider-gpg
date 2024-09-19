@@ -49,6 +49,7 @@ func (p *GpgProvider) Configure(ctx context.Context, req provider.ConfigureReque
 func (p *GpgProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		NewKeyPairResource,
+		NewKeyResource,
 	}
 }
 
