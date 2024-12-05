@@ -265,7 +265,6 @@ func GnuPG() *profile.Custom {
 		cfg.DefaultHash = crypto.SHA512
 	}
 	return &profile.Custom{
-		Name:                 "gpg2.1",
 		SetKeyAlgorithm:      setKeyAlgorithm,
 		Hash:                 crypto.SHA512,
 		CipherEncryption:     packet.CipherAES256,
