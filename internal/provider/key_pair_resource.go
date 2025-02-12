@@ -4,8 +4,6 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
-	"unsafe"
-
 	"github.com/ProtonMail/gopenpgp/v3/constants"
 	gpgcrypto "github.com/ProtonMail/gopenpgp/v3/crypto"
 	"github.com/ProtonMail/gopenpgp/v3/profile"
@@ -202,7 +200,7 @@ func (g KeyPairResource) Create(ctx context.Context, req resource.CreateRequest,
 	}
 	defer key.ClearPrivateParams()
 
-	key, err = pgp.LockKey(key, unsafe.Slice(unsafe.StringData(data.Passphrase.ValueString()), len(data.Passphrase.ValueString())))
+	key, err = pgp.LockKey(key, []byte(data.Passphrase.ValueString()))
 	if err != nil {
 		resp.Diagnostics.AddError("GPG key pair generation failed", fmt.Sprintf("LockKey failed with error: %s", err))
 		return
