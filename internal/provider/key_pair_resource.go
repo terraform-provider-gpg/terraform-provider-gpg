@@ -72,7 +72,7 @@ func (g KeyPairResource) Schema(ctx context.Context, req resource.SchemaRequest,
 				},
 			},
 			"kind": schema.StringAttribute{
-				Description: "Kind of key",
+				Description: "Kind of key - Defaults to ECC",
 				Optional:    true,
 				Computed:    true,
 				Default:     stringdefault.StaticString("default"),

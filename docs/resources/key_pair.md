@@ -44,7 +44,7 @@ resource "gpg_key_pair" "this" {
 
 ### Optional
 
-- `kind` (String) Kind of key
+- `kind` (String) Kind of key - Defaults to ECC
 
 ### Read-Only
 
