@@ -2,21 +2,23 @@ package provider
 
 import (
 	"context"
-	"crypto"
 	"encoding/hex"
 	"fmt"
-	"github.com/ProtonMail/go-crypto/openpgp/packet"
+	"unsafe"
+
 	"github.com/ProtonMail/gopenpgp/v3/constants"
 	gpgcrypto "github.com/ProtonMail/gopenpgp/v3/crypto"
 	"github.com/ProtonMail/gopenpgp/v3/profile"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"unsafe"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -69,6 +71,15 @@ func (g KeyPairResource) Schema(ctx context.Context, req resource.SchemaRequest,
 				MarkdownDescription: "ID of the key pair in hex format.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"kind": schema.StringAttribute{
+				Description: "Kind of key",
+				Optional:    true,
+				Computed:    true,
+				Default:     stringdefault.StaticString("default"),
+				Validators: []validator.String{
+					stringvalidator.OneOf("default", "rsa"),
 				},
 			},
 			"identities": schema.ListNestedAttribute{
@@ -155,6 +166,17 @@ func (g KeyPairResource) ValidateConfig(ctx context.Context, req resource.Valida
 	}
 }
 
+func (g KeyPairResource) getPGPProfile(kind string) *profile.Custom {
+	switch kind {
+	case "default":
+		return profile.Default()
+	case "rsa":
+		return profile.RFC4880()
+	default:
+		panic("unknown pgp key kind provided")
+	}
+}
+
 func (g KeyPairResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data keyPairModelV1
 
@@ -165,7 +187,7 @@ func (g KeyPairResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
-	var pgp = gpgcrypto.PGPWithProfile(GnuPG())
+	var pgp = gpgcrypto.PGPWithProfile(g.getPGPProfile(data.Kind.ValueString()))
 
 	builder := pgp.KeyGeneration()
 	for _, identity := range data.Identities {
@@ -245,6 +267,7 @@ func (g KeyPairResource) Delete(ctx context.Context, req resource.DeleteRequest,
 type keyPairModelV1 struct {
 	Id            types.String      `tfsdk:"id"`
 	Identities    []identityModelV1 `tfsdk:"identities"`
+	Kind		  types.String		`tfsdk:"kind"`
 	Passphrase    types.String      `tfsdk:"passphrase"`
 	Fingerprint   types.String      `tfsdk:"fingerprint"`
 	PrivateKey    types.String      `tfsdk:"private_key"`
@@ -255,20 +278,4 @@ type keyPairModelV1 struct {
 type identityModelV1 struct {
 	Name  types.String `tfsdk:"name"`
 	Email types.String `tfsdk:"email"`
-}
-
-// GnuPG returns a custom profile that conforms with modern algorithms available in GnuPG >=2.1.
-func GnuPG() *profile.Custom {
-	setKeyAlgorithm := func(cfg *packet.Config, securityLevel int8) {
-		cfg.Algorithm = packet.PubKeyAlgoEdDSA
-		cfg.Curve = packet.Curve25519
-		cfg.DefaultHash = crypto.SHA512
-	}
-	return &profile.Custom{
-		SetKeyAlgorithm:      setKeyAlgorithm,
-		Hash:                 crypto.SHA512,
-		CipherEncryption:     packet.CipherAES256,
-		CipherKeyEncryption:  packet.CipherAES256,
-		CompressionAlgorithm: packet.CompressionZLIB,
-	}
 }

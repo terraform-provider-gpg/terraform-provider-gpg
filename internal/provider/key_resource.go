@@ -4,8 +4,11 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
+	"unsafe"
+
 	"github.com/ProtonMail/gopenpgp/v3/constants"
 	gpgcrypto "github.com/ProtonMail/gopenpgp/v3/crypto"
+	"github.com/ProtonMail/gopenpgp/v3/profile"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -13,7 +16,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"unsafe"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -142,7 +144,7 @@ func (g KeyResource) Create(ctx context.Context, req resource.CreateRequest, res
 		return
 	}
 
-	var pgp = gpgcrypto.PGPWithProfile(GnuPG())
+	var pgp = gpgcrypto.PGPWithProfile(profile.Default())
 
 	builder := pgp.KeyGeneration()
 	for _, identity := range data.Identities {
