@@ -42,6 +42,10 @@ resource "gpg_key_pair" "this" {
 - `identities` (Attributes List) List of identities for the GPG key pair. Due to limitations in the underlying library only one identity is supported at the moment. (see [below for nested schema](#nestedatt--identities))
 - `passphrase` (String, Sensitive) Passphrase for locking the private key.
 
+### Optional
+
+- `kind` (String) Kind of key - Defaults to ECC
+
 ### Read-Only
 
 - `fingerprint` (String) Fingerprint of the public key.

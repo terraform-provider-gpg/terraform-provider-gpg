@@ -4,8 +4,11 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
+	"unsafe"
+
 	"github.com/ProtonMail/gopenpgp/v3/constants"
 	gpgcrypto "github.com/ProtonMail/gopenpgp/v3/crypto"
+	"github.com/ProtonMail/gopenpgp/v3/profile"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -13,7 +16,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"unsafe"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -114,7 +116,7 @@ func keySchema() *schema.Schema {
 }
 
 func (g KeyResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
-	var data keyPairModelV1
+	var data keyModelV1
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
@@ -133,7 +135,7 @@ func (g KeyResource) ValidateConfig(ctx context.Context, req resource.ValidateCo
 }
 
 func (g KeyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data keyPairModelV1
+	var data keyModelV1
 
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -142,7 +144,7 @@ func (g KeyResource) Create(ctx context.Context, req resource.CreateRequest, res
 		return
 	}
 
-	var pgp = gpgcrypto.PGPWithProfile(GnuPG())
+	var pgp = gpgcrypto.PGPWithProfile(profile.Default())
 
 	builder := pgp.KeyGeneration()
 	for _, identity := range data.Identities {
@@ -204,7 +206,7 @@ func (g KeyResource) Read(ctx context.Context, req resource.ReadRequest, resp *r
 
 // Update ensures the plan value is copied to the state to complete the update.
 func (g KeyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var model keyPairModelV1
+	var model keyModelV1
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &model)...)
 
@@ -217,4 +219,20 @@ func (g KeyResource) Update(ctx context.Context, req resource.UpdateRequest, res
 
 func (g KeyResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Nothing to do here.
+}
+
+type keyModelV1 struct {
+	Id            types.String      `tfsdk:"id"`
+	Identities    []keyIdentityModelV1 `tfsdk:"identities"`
+	Passphrase    types.String      `tfsdk:"passphrase"`
+	Fingerprint   types.String      `tfsdk:"fingerprint"`
+	PrivateKey    types.String      `tfsdk:"private_key"`
+	PrivateKeyHex types.String      `tfsdk:"private_key_hex"`
+	PublicKey     types.String      `tfsdk:"public_key"`
+	PublicKeyHex  types.String      `tfsdk:"public_key_hex"`
+}
+
+type keyIdentityModelV1 struct {
+	Name  types.String `tfsdk:"name"`
+	Email types.String `tfsdk:"email"`
 }
