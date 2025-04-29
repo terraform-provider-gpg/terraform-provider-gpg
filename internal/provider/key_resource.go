@@ -114,7 +114,7 @@ func keySchema() *schema.Schema {
 }
 
 func (g KeyResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
-	var data keyPairModelV1
+	var data keyModelV0
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
@@ -133,7 +133,7 @@ func (g KeyResource) ValidateConfig(ctx context.Context, req resource.ValidateCo
 }
 
 func (g KeyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data keyPairModelV1
+	var data keyModelV0
 
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -142,7 +142,7 @@ func (g KeyResource) Create(ctx context.Context, req resource.CreateRequest, res
 		return
 	}
 
-	var pgp = gpgcrypto.PGPWithProfile(GnuPG())
+	var pgp = gpgcrypto.PGPWithProfile(RFC4880_Curve25519())
 
 	builder := pgp.KeyGeneration()
 	for _, identity := range data.Identities {
@@ -204,7 +204,7 @@ func (g KeyResource) Read(ctx context.Context, req resource.ReadRequest, resp *r
 
 // Update ensures the plan value is copied to the state to complete the update.
 func (g KeyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var model keyPairModelV1
+	var model keyModelV0
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &model)...)
 
@@ -217,4 +217,15 @@ func (g KeyResource) Update(ctx context.Context, req resource.UpdateRequest, res
 
 func (g KeyResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Nothing to do here.
+}
+
+type keyModelV0 struct {
+	Id            types.String      `tfsdk:"id"`
+	Identities    []identityModelV0 `tfsdk:"identities"`
+	Passphrase    types.String      `tfsdk:"passphrase"`
+	Fingerprint   types.String      `tfsdk:"fingerprint"`
+	PrivateKey    types.String      `tfsdk:"private_key"`
+	PrivateKeyHex types.String      `tfsdk:"private_key_hex"`
+	PublicKey     types.String      `tfsdk:"public_key"`
+	PublicKeyHex  types.String      `tfsdk:"public_key_hex"`
 }

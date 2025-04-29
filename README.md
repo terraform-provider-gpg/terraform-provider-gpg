@@ -1,6 +1,6 @@
 # terraform-provider-gpg
 
-The GPG provider provides a resource to generate an ECC (Curve25519) private/public key pair.
+The GPG provider provides a resource to generate RSA and ECC (Curve25519) private/public key pairs (compatible with OpenPGP v4 / RFC4880).
 
 ## Documentation
 Official documentation on how to use this provider can be found on the

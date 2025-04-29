@@ -3,12 +3,12 @@
 page_title: "gpg_key_pair Resource - terraform-provider-gpg"
 subcategory: ""
 description: |-
-  A resource for generating ECC (Curve25519) GPG keys
+  A resource for generating RSA and ECC (Curve25519) GPG keys (compatible with OpenPGP v4 / RFC4880)
 ---
 
-# gpg_key (Resource)
+# gpg_key_pair (Resource)
 
-A resource for generating ECC (Curve25519) GPG keys
+A resource for generating RSA and ECC (Curve25519) GPG keys (compatible with OpenPGP v4 / RFC4880)
 
 
 !>The private key and password will be stored in the raw state as plain-text. [Read more about sensitive data in
@@ -41,6 +41,10 @@ resource "gpg_key_pair" "this" {
 
 - `identities` (Attributes List) List of identities for the GPG key pair. Due to limitations in the underlying library only one identity is supported at the moment. (see [below for nested schema](#nestedatt--identities))
 - `passphrase` (String, Sensitive) Passphrase for locking the private key.
+
+### Optional
+
+- `profile` (String) The PGP key profile to use. Valid options are `v4_rsa` (RSA 4096 & SHA256) or `v4_curve25519` (EdDSA & Curve25519 & SHA512, default).
 
 ### Read-Only
 
