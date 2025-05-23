@@ -5,8 +5,8 @@ go 1.22.7
 toolchain go1.23.3
 
 require (
-	github.com/ProtonMail/go-crypto v1.2.0
-	github.com/ProtonMail/gopenpgp/v3 v3.2.0
+	github.com/ProtonMail/go-crypto v1.3.0
+	github.com/ProtonMail/gopenpgp/v3 v3.3.0
 	github.com/hashicorp/terraform-plugin-docs v0.21.0
 	github.com/hashicorp/terraform-plugin-framework v1.14.1
 	github.com/hashicorp/terraform-plugin-go v0.26.0
