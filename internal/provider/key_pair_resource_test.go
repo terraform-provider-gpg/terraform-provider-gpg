@@ -2,11 +2,12 @@ package provider
 
 import (
 	"fmt"
+	"testing"
+	"unsafe"
+
 	"github.com/ProtonMail/go-crypto/openpgp/packet"
 	"github.com/ProtonMail/gopenpgp/v3/crypto"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	"testing"
-	"unsafe"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
@@ -77,7 +78,7 @@ func testAccCheckGpgKeyPair(name string) resource.TestCheckFunc {
 		if version != 4 {
 			return fmt.Errorf("unexpected key version %d", version)
 		}
-		algorithm := privateKey.GetEntity().PrivateKey.PublicKey.PubKeyAlgo
+		algorithm := privateKey.GetEntity().PrivateKey.PubKeyAlgo
 		if algorithm != packet.PubKeyAlgoEdDSA {
 			return fmt.Errorf("unexpected key algorithm %d", algorithm)
 		}
