@@ -97,3 +97,61 @@ resource "gpg_key_pair" "test" {
 }
 `, name, email, passphrase)
 }
+
+func TestAccKeyPairResource_NoPassphrase(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+resource "gpg_key_pair" "test_no_passphrase" {
+  identities = [{
+    name  = "Test User"
+    email = "test@example.com"
+  }]
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckGpgKeyPairUnlocked("gpg_key_pair.test_no_passphrase"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckGpgKeyPairUnlocked(name string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[name]
+		if !ok {
+			return fmt.Errorf("could not find resource at path %s", name)
+		}
+
+		privateKey, err := crypto.NewKeyFromArmored(rs.Primary.Attributes["private_key"])
+		if err != nil {
+			return err
+		}
+
+		if !privateKey.IsPrivate() {
+			return fmt.Errorf("expected key to be private")
+		}
+
+		locked, err := privateKey.IsLocked()
+		if err != nil {
+			return err
+		}
+		if locked {
+			return fmt.Errorf("expected key to be unlocked (no passphrase)")
+		}
+
+		version := privateKey.GetEntity().PrivateKey.Version
+		if version != 4 {
+			return fmt.Errorf("unexpected key version %d", version)
+		}
+		algorithm := privateKey.GetEntity().PrivateKey.PubKeyAlgo
+		if algorithm != packet.PubKeyAlgoEdDSA {
+			return fmt.Errorf("unexpected key algorithm %d", algorithm)
+		}
+		return nil
+	}
+}

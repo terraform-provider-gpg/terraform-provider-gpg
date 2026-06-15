@@ -91,9 +91,12 @@ func (g KeyPairResource) Schema(ctx context.Context, req resource.SchemaRequest,
 				},
 			},
 			"passphrase": schema.StringAttribute{
-				Required:            true,
+				Optional:            true,
 				Sensitive:           true,
-				MarkdownDescription: "Passphrase for locking the private key.",
+				MarkdownDescription: "Passphrase for locking the private key. When omitted, the key is not passphrase-protected.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"fingerprint": schema.StringAttribute{
 				Computed:            true,
@@ -180,10 +183,12 @@ func (g KeyPairResource) Create(ctx context.Context, req resource.CreateRequest,
 	}
 	defer key.ClearPrivateParams()
 
-	key, err = pgp.LockKey(key, unsafe.Slice(unsafe.StringData(data.Passphrase.ValueString()), len(data.Passphrase.ValueString())))
-	if err != nil {
-		resp.Diagnostics.AddError("GPG key pair generation failed", fmt.Sprintf("LockKey failed with error: %s", err))
-		return
+	if !data.Passphrase.IsNull() && !data.Passphrase.IsUnknown() && data.Passphrase.ValueString() != "" {
+		key, err = pgp.LockKey(key, unsafe.Slice(unsafe.StringData(data.Passphrase.ValueString()), len(data.Passphrase.ValueString())))
+		if err != nil {
+			resp.Diagnostics.AddError("GPG key pair generation failed", fmt.Sprintf("LockKey failed with error: %s", err))
+			return
+		}
 	}
 
 	privateKey, err := key.Armor()
