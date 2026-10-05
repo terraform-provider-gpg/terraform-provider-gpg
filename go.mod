@@ -3,8 +3,8 @@ module terraform-provider-gpg
 go 1.25.8
 
 require (
-	github.com/ProtonMail/go-crypto v1.4.1
-	github.com/ProtonMail/gopenpgp/v3 v3.4.1
+	github.com/ProtonMail/go-crypto v1.5.2
+	github.com/ProtonMail/gopenpgp/v3 v3.5.2
 	github.com/hashicorp/terraform-plugin-docs v0.25.0
 	github.com/hashicorp/terraform-plugin-framework v1.19.0
 	github.com/hashicorp/terraform-plugin-go v0.31.0
